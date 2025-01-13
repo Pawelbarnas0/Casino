@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import casino.gui.GuiClass;
 
 public class CasinoApp {
     public static void main(String[] args) {
@@ -79,13 +80,23 @@ public class CasinoApp {
         themePanel.add(new JLabel("Select Theme: "));
         themePanel.add(themeSelector);
 
-        backgroundPanel.add(themePanel, BorderLayout.NORTH);
-        backgroundPanel.add(topPanel, BorderLayout.NORTH);
+// Combine themePanel and topPanel
+        JPanel combinedTopPanel = new JPanel(new BorderLayout());
+        combinedTopPanel.setOpaque(false);
+        combinedTopPanel.add(themePanel, BorderLayout.NORTH);
+        combinedTopPanel.add(topPanel, BorderLayout.SOUTH);
+
+        backgroundPanel.add(combinedTopPanel, BorderLayout.NORTH);
         backgroundPanel.add(centerPanel, BorderLayout.CENTER);
         backgroundPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         // Set the panel as the content pane
         frame.setContentPane(backgroundPanel);
+        GuiClass guiClass = new GuiClass();
+        guiClass.setupSlotButton(slotButton, centerPanel);
+        guiClass.setuppokerButton(pokerButton, centerPanel);
+        guiClass.setupblackjackButton(blackjackButton, centerPanel);
+        guiClass.setupExitButton(exitButton, centerPanel);
 
         // Make the frame visible
         frame.setVisible(true);

@@ -6,7 +6,7 @@ public class GuiClass {
     public void setupSlotButton(JButton slotButton, JPanel centerPanel) {
         slotButton.addActionListener(e -> {
             centerPanel.removeAll();
-            centerPanel.add(new SlotMachinePanel());
+            centerPanel.add(new RouletteGamePanel());
             centerPanel.revalidate();
             centerPanel.repaint();
         });
@@ -22,7 +22,7 @@ public class GuiClass {
     public void setupblackjackButton(JButton blackjackButton, JPanel centerPanel) {
         blackjackButton.addActionListener(e -> {
             centerPanel.removeAll();
-            centerPanel.add(new JLabel("black jackComing Soon!"));
+            centerPanel.add(new BlackJackPanel());
             centerPanel.revalidate();
             centerPanel.repaint();
         });
