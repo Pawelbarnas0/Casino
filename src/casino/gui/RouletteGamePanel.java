@@ -215,7 +215,6 @@ public class RouletteGamePanel extends JPanel {
                     }
                 }
             });
-
             animationTimer.start();
         }
     }
