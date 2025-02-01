@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Timer;
 
 public class BlackJackPanel extends JPanel{
 
@@ -15,11 +14,17 @@ public class BlackJackPanel extends JPanel{
     private JPanel startPanel;
     private GameTablePanel tablePanel;
 
-    private ArrayList<BlackJackPlayer> players;
+    private ArrayList<BlackJackHand> hands;
     private BlackJackDealer dealer;
     private CardStack cardStack;
-    private int currentPlayer;
+    private int currentHand;
     private javax.swing.Timer dealerTimer;
+    private boolean buttonsWorking;
+
+    private JButton hitButton;
+    private JButton standButton;
+    private JButton splitButton;
+    private JButton doubleButton;
 
     private class lateDisplayMessage implements ActionListener{
         private String message;
@@ -31,6 +36,8 @@ public class BlackJackPanel extends JPanel{
         public void actionPerformed(ActionEvent e) {
             revealHoldCard();
             tablePanel.displayMessage(message);
+            scenes.show(mainPanel, "startPanel");
+            triggerButtons();
         }
     }
 
@@ -54,14 +61,14 @@ public class BlackJackPanel extends JPanel{
         gamePlayPanel = new JPanel();
         gamePlayPanel.setLayout(new GridLayout(1,4));
 
-        JButton hitButton = new JButton("Hit");
-        hitButton.addActionListener(e -> {hitButton();});
-        JButton standButton = new JButton("Stand");
-        standButton.addActionListener(e -> {standButton();});
-        JButton splitButton = new JButton("Split");
-        splitButton.addActionListener(e -> {splitButton();});
-        JButton doubleButton = new JButton("Double");
-        doubleButton.addActionListener(e -> {doubleButton();});
+        hitButton = new JButton("Hit");
+        hitButton.addActionListener(e -> {onHitButton();});
+        standButton = new JButton("Stand");
+        standButton.addActionListener(e -> {onStandButton();});
+        splitButton = new JButton("Split");
+        splitButton.addActionListener(e -> {onSplitButton();});
+        doubleButton = new JButton("Double");
+        doubleButton.addActionListener(e -> {onDoubleButton();});
 
         gamePlayPanel.add(hitButton);
         gamePlayPanel.add(standButton);
@@ -79,73 +86,67 @@ public class BlackJackPanel extends JPanel{
         add(tablePanel, BorderLayout.CENTER);
         add(mainPanel, BorderLayout.SOUTH);
 
-        players = new ArrayList<>();
+        hands = new ArrayList<>();
         dealer = new BlackJackDealer();
         cardStack = new CardStack(tablePanel.getCardList(), 3);
-        currentPlayer = 0;
+        currentHand = 0;
+        buttonsWorking = true;
     }
 
     void onDealButton(){
         dealer.reset();
-        players.clear();
-        players.add(new BlackJackPlayer());
-        currentPlayer = 0;
+        hands.clear();
+        hands.add(new BlackJackHand());
+        currentHand = 0;
         tablePanel.clearMessageDisplay();
 
         scenes.show(mainPanel, "gamePlayPanel");
 
         for(int i = 0; i < 2; i++){
             dealer.Draw(cardStack.DrawCard());
-            for(BlackJackPlayer player : players){
+            for(BlackJackHand player : hands){
                 player.Draw(cardStack.DrawCard());
             }
         }
         refreshScene();
 
-        if(players.get(currentPlayer).GetScore() == 21){
-            scenes.show(mainPanel, "startPanel");
-            //BLACKJACK!!! - add winnings
-            javax.swing.Timer dispMessage = new javax.swing.Timer(1000, new lateDisplayMessage("BLACKJACK!!"));
-            dispMessage.setRepeats(false);
-            dispMessage.start();
+        if(hands.get(currentHand).GetScore() == 21){
+            secureLateMessageDisplay("BLACKJACK!!", 500);
+            //add 3/2 of the bet
         }else if(dealer.GetScore() == 21){
-            scenes.show(mainPanel, "startPanel");
-            //BUST - subtract bet
-            javax.swing.Timer dispMessage = new javax.swing.Timer(1000, new lateDisplayMessage("Dealer has BLACKJACK!!"));
-            dispMessage.setRepeats(false);
-            dispMessage.start();
+            secureLateMessageDisplay("Dealer has BLACKAJCK!!", 500);
+            //subtract the bet
 
-        }else if(dealer.GetScore() == 21 && players.get(currentPlayer).GetScore() == 21){
-            scenes.show(mainPanel, "startPanel");
-            //PUSH - no bet gets subtracted
-            javax.swing.Timer dispMessage = new javax.swing.Timer(1000, new lateDisplayMessage("PUSH!!"));
-            dispMessage.setRepeats(false);
-            dispMessage.start();
+        }else if(dealer.GetScore() == 21 && hands.get(currentHand).GetScore() == 21){
+            secureLateMessageDisplay("PUSH!!", 500);
         }
     }
 
-    void hitButton(){
-        if(players.get(currentPlayer).GetScore() == 21){
+    void onHitButton(){
+        if(!buttonsWorking) return;
+        if(hands.get(currentHand).GetScore() == 21){
             updatePlayer();
             return;
         }
-        players.get(currentPlayer).Draw(cardStack.DrawCard());
+        hands.get(currentHand).Draw(cardStack.DrawCard());
         refreshScene();
-        if(players.get(currentPlayer).Bust()){
-            players.remove(currentPlayer);
-            if(players.size() >= 1){
+        if(hands.get(currentHand).Bust()){
+            //subtract portion of bet: totalbet/hands.size
+            hands.remove(currentHand);
+            if(hands.size() >= 1){
                 refreshScene();
             }
-            //subtract proportion of bet from account
         }
-        if(players.size() == 0){
-            scenes.show(mainPanel, "startPanel");
+        if(hands.size() == 0){
             tablePanel.displayMessage("BUST!!");
+            scenes.show(mainPanel,"startPanel");
         }
     }
-    void standButton() {
-        if (currentPlayer < players.size() - 1) {
+    void onStandButton() {
+        if(!buttonsWorking) return;
+        if (currentHand < hands.size() - 1) {
             updatePlayer();
+            refreshScene();
             return;
         }
         revealHoldCard();
@@ -159,36 +160,42 @@ public class BlackJackPanel extends JPanel{
                 }else{
                     dealerTimer.stop();
                     evaluateGame();
+                    triggerButtons();
                 };
             }
         });
+        triggerButtons();
         dealerTimer.start();
     }
-    void splitButton() {
-        if (players.get(currentPlayer).hasPair()) {
-            players.add(currentPlayer + 1, new BlackJackPlayer());
-            players.get(currentPlayer + 1).PlayerCards.add(players.get(currentPlayer).PlayerCards.get(1));
-            players.get(currentPlayer).PlayerCards.remove(1);
-            players.get(currentPlayer).Draw(cardStack.DrawCard());
-            players.get(currentPlayer + 1).Draw(cardStack.DrawCard());
-
+    void onSplitButton() {
+        if(!buttonsWorking) return;
+        if (hands.get(currentHand).hasPair()) {
+            hands.add(currentHand + 1, new BlackJackHand());
+            hands.get(currentHand + 1).PlayerCards.add(hands.get(currentHand).PlayerCards.get(1));
+            hands.get(currentHand).PlayerCards.remove(1);
+            hands.get(currentHand).Draw(cardStack.DrawCard());
+            hands.get(currentHand + 1).Draw(cardStack.DrawCard());
+            //double the bet
             refreshScene();
         }
     }
 
 
-    void doubleButton(){
-        if(players.get(currentPlayer).GetScore() == 21){
+    void onDoubleButton(){
+        if(!buttonsWorking) return;
+        if(hands.get(currentHand).PlayerCards.size() != 2){ return;}
+        if(hands.get(currentHand).GetScore() == 21){
             updatePlayer();
             return;
         }
-        hitButton();
-        standButton();
+        onHitButton();
+        onStandButton();
+        //double the bet
     }
 
     void updatePlayer(){
-        currentPlayer++;
-        currentPlayer %= players.size() > 0 ? players.size() : 1;
+        currentHand++;
+        currentHand %= hands.size() > 0 ? hands.size() : 1;
     }
 
     void refreshScene(){
@@ -197,7 +204,7 @@ public class BlackJackPanel extends JPanel{
         tablePanel.drawCard(dealer.getCards().get(1), "Dealer", false);
         refreshScores(false);
 
-        for(BlackJackPlayer player : players){
+        for(BlackJackHand player : hands){
             tablePanel.drawCard(player.getCards(), "Player", true);
         }
     }
@@ -207,34 +214,64 @@ public class BlackJackPanel extends JPanel{
         tablePanel.drawCard(dealer.getCards(), "Dealer", true);
         refreshScores(true);
 
-        for(BlackJackPlayer player : players){
+        for(BlackJackHand player : hands){
             tablePanel.drawCard(player.getCards(), "Player", true);
         }
     }
 
     void refreshScores(boolean refreshdealer){
-        if(players.size() <= 0) return;
-        if(!refreshdealer) tablePanel.enterScores(0 ,players.get(currentPlayer).GetScore());
-        else tablePanel.enterScores(dealer.GetScore(), players.get(currentPlayer).GetScore());
+        try {
+            if (!refreshdealer) tablePanel.enterScores(0, hands.get(currentHand).GetScore());
+            else tablePanel.enterScores(dealer.GetScore(), hands.get(currentHand).GetScore());
+        }catch(Exception e){
+            if(hands.isEmpty()) return;
+            updatePlayer();
+            if (!refreshdealer) tablePanel.enterScores(0, hands.get(currentHand).GetScore());
+            else tablePanel.enterScores(dealer.GetScore(), hands.get(currentHand).GetScore());
+        }
+    }
+
+    void triggerButtons(){
+        if(buttonsWorking) buttonsWorking = false;
+        else buttonsWorking = true;
     }
 
     void evaluateGame(){
         if(dealer.Bust()){
-            scenes.show(mainPanel, "startPanel");
             tablePanel.displayMessage("Dealer BUST!!");
+            scenes.show(mainPanel, "startPanel");
+            //add bet to account
         }else{
-            for(int i = 0; i < players.size(); i++){
-                if(players.get(i).GetScore() > dealer.GetScore()){
+            int delay = 0;
+            for(int i = 0; i < hands.size(); i++){
+                if(i > 0) delay = 1000;
+                if(hands.get(i).GetScore() > dealer.GetScore()){
+                    currentHand = i;
                     scenes.show(mainPanel, "startPanel");
-                    tablePanel.displayMessage("You Win!!");
-                } else if(players.get(i).GetScore() == dealer.GetScore()){
+                    secureLateMessageDisplay("You Win!!", delay);
+                    revealHoldCard();
+                    //add bet to account
+                } else if(hands.get(i).GetScore() == dealer.GetScore()){
+                    currentHand = i;
                     scenes.show(mainPanel, "startPanel");
-                    tablePanel.displayMessage("PUSH!!");
+                    secureLateMessageDisplay("PUSH!!", delay);
+                    revealHoldCard();
                 }else{
+                    currentHand = i;
                     scenes.show(mainPanel, "startPanel");
-                    tablePanel.displayMessage("Dealer Wins!!");
+                    secureLateMessageDisplay("Dealer wins!!", delay);
+                    revealHoldCard();
+                    //subtract bet from account
                 }
             }
         }
     }
+
+    void secureLateMessageDisplay(String message, int delay){
+        triggerButtons();
+        javax.swing.Timer dispMessage = new javax.swing.Timer(delay, new lateDisplayMessage(message));
+        dispMessage.setRepeats(false);
+        dispMessage.start();
+    }
+
 }

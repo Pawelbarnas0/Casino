@@ -1,14 +1,12 @@
 package casino.gui;
 
-import javax.smartcardio.Card;
 import java.util.ArrayList;
-import java.util.Random;
 
-public class BlackJackPlayer {
+public class BlackJackHand {
 
     ArrayList<String> PlayerCards;
 
-    BlackJackPlayer(){
+    BlackJackHand(){
         PlayerCards = new ArrayList<>();
     }
 
