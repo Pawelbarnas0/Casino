@@ -63,7 +63,7 @@ public class CasinoApp {
         // Add labels and components to panels
         topPanel.add(new JLabel("Player Balance: $1000"));
         centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
-        JButton slotButton = new JButton("Slot Machine");
+        JButton slotButton = new JButton("Roulette");
         JButton pokerButton = new JButton("Poker");
         JButton blackjackButton = new JButton("Blackjack");
         JButton exitButton = new JButton("Exit");
