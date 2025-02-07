@@ -9,6 +9,7 @@ import java.util.Random;
 
 public class RouletteGamePanel extends JPanel {
     private JComboBox<String> betType;
+    private JComboBox<String> betAmount;
     private JTextField betNumberField;
     private JButton spinButton;
     private JLabel resultLabel;
@@ -25,8 +26,14 @@ public class RouletteGamePanel extends JPanel {
         setLayout(new BorderLayout());
         JPanel betPanel = new JPanel();
         betPanel.add(new JLabel("Bet Type:"));
-        betType = new JComboBox<>(new String[]{"Black","Red","Green","Number"});
+        betType = new JComboBox<>(new String[]{"Black", "Red", "Green", "Number"});
         betPanel.add(betType);
+
+        // Bet amount selector
+        betPanel.add(new JLabel("Amount:"));
+        betAmount = new JComboBox<>(new String[]{"1", "5", "10", "25", "50"});
+        betPanel.add(betAmount);
+
         betPanel.add(new JLabel("Number (0-36):"));
         betNumberField = new JTextField(5);
         betPanel.add(betNumberField);
@@ -66,23 +73,38 @@ public class RouletteGamePanel extends JPanel {
 
     private void checkBetOutcome(String betChoice) {
         String betNumText = betNumberField.getText().trim();
+        int currentBet = Integer.parseInt((String) betAmount.getSelectedItem());
         String color = winningNumber == 0 ? "Green" :
                 (winningNumber % 2 == 0 ? "Black" : "Red");
         boolean win = false;
+        int payoutMultiplier = 1;
+
         if ("Green".equalsIgnoreCase(betChoice) && "Green".equalsIgnoreCase(color)) {
             win = true;
+            payoutMultiplier = 35; // 35:1 payout for green
         } else if ("Red".equalsIgnoreCase(betChoice) && "Red".equalsIgnoreCase(color)) {
             win = true;
+            payoutMultiplier = 1; // 1:1 payout for colors
         } else if ("Black".equalsIgnoreCase(betChoice) && "Black".equalsIgnoreCase(color)) {
             win = true;
+            payoutMultiplier = 1; // 1:1 payout for colors
         } else if ("Number".equalsIgnoreCase(betChoice)) {
             try {
                 if (Integer.parseInt(betNumText) == winningNumber) {
                     win = true;
+                    payoutMultiplier = 35; // 35:1 payout for numbers
                 }
-            } catch (NumberFormatException ignored){}
+            } catch (NumberFormatException ignored) {
+            }
         }
-        resultLabel.setText("Rolled " + winningNumber + " (" + color + ") - " + (win ? "You win!" : "You lose!"));
+
+        String result = "Rolled " + winningNumber + " (" + color + ") - ";
+        if (win) {
+            result += "You win $" + (currentBet * payoutMultiplier) + "!";
+        } else {
+            result += "You lose $" + currentBet + "!";
+        }
+        resultLabel.setText(result);
         repaint();
     }
 
@@ -108,22 +130,21 @@ public class RouletteGamePanel extends JPanel {
 
             // Draw numbers
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 14)); // Larger font
-            double angleRad = Math.toRadians(start + extent/2);
-            int textRadius = wheelSize/2 - 25;
-            int tx = cx + (int)(Math.cos(angleRad) * textRadius);
-            int ty = cy + (int)(Math.sin(angleRad) * textRadius);
+            g2.setFont(new Font("Arial", Font.BOLD, 14));
+            double angleRad = Math.toRadians(start + extent / 2);
+            int textRadius = wheelSize / 2 - 25;
+            int tx = cx + (int) (Math.cos(angleRad) * textRadius);
+            int ty = cy + (int) (Math.sin(angleRad) * textRadius);
 
             AffineTransform old = g2.getTransform();
             g2.translate(tx, ty);
-            g2.rotate(angleRad); // Align text along the radius
+            g2.rotate(angleRad);
 
             String num = String.valueOf(i);
             FontMetrics fm = g2.getFontMetrics();
             int textWidth = fm.stringWidth(num);
             int textHeight = fm.getAscent();
-            // Center the text
-            g2.drawString(num, -textWidth/2, textHeight/2 - 2); // Adjusted vertical position
+            g2.drawString(num, -textWidth / 2, textHeight / 2 - 2);
 
             g2.setTransform(old);
         }
@@ -148,7 +169,7 @@ public class RouletteGamePanel extends JPanel {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Roulette Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800,600);
+        frame.setSize(800, 600);
         frame.add(new RouletteGamePanel());
         frame.setVisible(true);
     }

@@ -52,7 +52,7 @@ public class CasinoApp {
 
         // Create and add panels
         JPanel topPanel = new JPanel(); // For player info
-        JPanel centerPanel = new JPanel(); // For game area
+        JPanel centerPanel = new JPanel(new BorderLayout()); // For game area // For game area
         JPanel bottomPanel = new JPanel(); // For controls
 
         // Set panels as transparent to show the background
