@@ -1,8 +1,15 @@
+package casino;
 import javax.swing.*;
 import java.awt.*;
 import casino.gui.GuiClass;
 
 public class CasinoApp {
+    public static int playerBalance = 1000;
+    public static JLabel balanceLabel = new JLabel("Player Balance: " + playerBalance);
+
+    public static void updateBalance() {
+        balanceLabel.setText("Player Balance: " + playerBalance);
+    }
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame("Casino Application");
@@ -14,7 +21,7 @@ public class CasinoApp {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon backgroundIcon = new ImageIcon("C:/Users/wiedzmok/Downloads/depositphotos_88609714-stock-illustration-casino-icon-with-dice-chips.jpg");
+                ImageIcon backgroundIcon = new ImageIcon("images/depositphotos_10718713-stock-photo-casino-background.jpg");
                 if(backgroundIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
                     System.out.println("Image not loaded");
                 }
@@ -52,7 +59,7 @@ public class CasinoApp {
 
         // Create and add panels
         JPanel topPanel = new JPanel(); // For player info
-        JPanel centerPanel = new JPanel(new BorderLayout()); // For game area // For game area
+        JPanel centerPanel = new JPanel(new BorderLayout()); // For game area //
         JPanel bottomPanel = new JPanel(); // For controls
 
         // Set panels as transparent to show the background
@@ -61,7 +68,7 @@ public class CasinoApp {
         bottomPanel.setOpaque(false);
 
         // Add labels and components to panels
-        topPanel.add(new JLabel("Player Balance: $1000"));
+        topPanel.add(CasinoApp.balanceLabel);
         centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
         JButton slotButton = new JButton("Roulette");
         JButton pokerButton = new JButton("Poker");

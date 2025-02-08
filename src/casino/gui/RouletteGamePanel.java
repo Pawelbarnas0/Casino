@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.util.Random;
-
+import casino.CasinoApp;
 public class RouletteGamePanel extends JPanel {
     private JComboBox<String> betType;
     private JComboBox<String> betAmount;
@@ -77,17 +77,17 @@ public class RouletteGamePanel extends JPanel {
         String color = winningNumber == 0 ? "Green" :
                 (winningNumber % 2 == 0 ? "Black" : "Red");
         boolean win = false;
-        int payoutMultiplier = 1;
+        int payoutMultiplier = 0;
 
         if ("Green".equalsIgnoreCase(betChoice) && "Green".equalsIgnoreCase(color)) {
             win = true;
-            payoutMultiplier = 35; // 35:1 payout for green
+            payoutMultiplier = 35; // payout multiplier for green
         } else if ("Red".equalsIgnoreCase(betChoice) && "Red".equalsIgnoreCase(color)) {
             win = true;
-            payoutMultiplier = 1; // 1:1 payout for colors
+            payoutMultiplier = 1; // 1:1 payout for red
         } else if ("Black".equalsIgnoreCase(betChoice) && "Black".equalsIgnoreCase(color)) {
             win = true;
-            payoutMultiplier = 1; // 1:1 payout for colors
+            payoutMultiplier = 1; // 1:1 payout for black
         } else if ("Number".equalsIgnoreCase(betChoice)) {
             try {
                 if (Integer.parseInt(betNumText) == winningNumber) {
@@ -98,14 +98,21 @@ public class RouletteGamePanel extends JPanel {
             }
         }
 
-        String result = "Rolled " + winningNumber + " (" + color + ") - ";
+        String result;
         if (win) {
-            result += "You win $" + (currentBet * payoutMultiplier) + "!";
+            int winAmount = currentBet * payoutMultiplier;
+            CasinoApp.playerBalance += winAmount;
+            result = "Rolled " + winningNumber + " (" + color + ") - You win $" + winAmount + "!";
         } else {
-            result += "You lose $" + currentBet + "!";
+            CasinoApp.playerBalance -= currentBet;
+            result = "Rolled " + winningNumber + " (" + color + ") - You lose $" + currentBet + "!";
         }
+
+        // Append updated balance to the result display.
+        result += " New Balance: $" + CasinoApp.playerBalance;
         resultLabel.setText(result);
         repaint();
+        CasinoApp.updateBalance();
     }
 
     @Override
@@ -127,7 +134,6 @@ public class RouletteGamePanel extends JPanel {
             g2.fill(arc);
             g2.setColor(Color.BLACK);
             g2.draw(arc);
-
             // Draw numbers
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Arial", Font.BOLD, 14));
@@ -140,12 +146,11 @@ public class RouletteGamePanel extends JPanel {
             g2.translate(tx, ty);
             g2.rotate(angleRad);
 
-            String num = String.valueOf(i);
+            String num = (i == 0) ? "00" : String.valueOf(i);
             FontMetrics fm = g2.getFontMetrics();
             int textWidth = fm.stringWidth(num);
             int textHeight = fm.getAscent();
-            g2.drawString(num, -textWidth / 2, textHeight / 2 - 2);
-
+            g2.drawString(num, textWidth / 2, textHeight / 2 - 2);
             g2.setTransform(old);
         }
 
@@ -162,7 +167,10 @@ public class RouletteGamePanel extends JPanel {
     }
 
     private Color getSliceColor(int index) {
-        if (index == 0) return Color.GREEN;
+        if (index == 34)
+            return Color.BLACK;
+        if (index == 36)
+            return Color.GREEN;
         return (index % 2 == 0) ? Color.BLACK : Color.RED;
     }
 
