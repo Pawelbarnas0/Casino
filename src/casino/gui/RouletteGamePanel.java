@@ -5,8 +5,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
+import java.security.SecureRandom;
+import casino.BetValidator;
 import casino.CasinoApp;
+import casino.InsufficientBalanceException;
+
 public class RouletteGamePanel extends JPanel {
     private JComboBox<String> betType;
     private JComboBox<String> betAmount;
@@ -31,7 +36,7 @@ public class RouletteGamePanel extends JPanel {
 
         // Bet amount selector
         betPanel.add(new JLabel("Amount:"));
-        betAmount = new JComboBox<>(new String[]{"1", "5", "10", "25", "50"});
+        betAmount = new JComboBox<>(new String[]{"1", "5", "10", "25", "500"});
         betPanel.add(betAmount);
 
         betPanel.add(new JLabel("Number (0-36):"));
@@ -48,8 +53,28 @@ public class RouletteGamePanel extends JPanel {
     }
 
     private void startSpin() {
+        int currentBet = Integer.parseInt((String) betAmount.getSelectedItem());
+        try {
+            BetValidator.validateBet(currentBet);
+        } catch (InsufficientBalanceException e) {
+            ErrorPanel.showError(e.getMessage());
+            return;
+        }
         spinningCount = 0;
-        winningNumber = random.nextInt(slices);
+        SecureRandom ranSeed;
+        try {
+            ranSeed = SecureRandom.getInstance("NativePRNG");
+            byte[] seed = ranSeed.generateSeed(8);
+            long seedVal = seed[0];
+            for (int i = 1; i < 8; i++) {
+                seedVal += seed[i];
+            }
+            Random random = new Random(seedVal);
+            winningNumber = random.nextInt(slices);
+        } catch (NoSuchAlgorithmException e) {
+            Random random = new Random();
+            winningNumber = random.nextInt(slices);
+        }
         ballAngle = 0;
         int numberOfSpins = 5; // Number of full spins before stopping
         finalAngle = (winningNumber + 0.5) * (360.0 / slices) + numberOfSpins * 360.0;
@@ -101,15 +126,15 @@ public class RouletteGamePanel extends JPanel {
         String result;
         if (win) {
             int winAmount = currentBet * payoutMultiplier;
-            CasinoApp.playerBalance += winAmount;
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() + winAmount);
             result = "Rolled " + winningNumber + " (" + color + ") - You win $" + winAmount + "!";
         } else {
-            CasinoApp.playerBalance -= currentBet;
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() - currentBet);
             result = "Rolled " + winningNumber + " (" + color + ") - You lose $" + currentBet + "!";
         }
 
         // Append updated balance to the result display.
-        result += " New Balance: $" + CasinoApp.playerBalance;
+        result += " New Balance: $" + CasinoApp.getPlayerBalance();
         resultLabel.setText(result);
         repaint();
         CasinoApp.updateBalance();

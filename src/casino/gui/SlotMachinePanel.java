@@ -22,8 +22,9 @@ class SlotMachinePanel extends JPanel {
         HashMap<String, BufferedImage> SlotIcons;
         String[] iconsToDraw;
         Timer slotSpinTimer;
-        int cardUpdateIndx = 0;
+        int[] cardUpdateIndx;
         int spinTime;
+        String messageToDisplay;
 
 
         Slot(){
@@ -44,6 +45,8 @@ class SlotMachinePanel extends JPanel {
                     System.out.println("Failed to load image " + icon.getName());
                 }
             iconsToDraw = new String[3];
+            messageToDisplay = null;
+            cardUpdateIndx = new int[2];
         }
 
         protected void paintComponent(Graphics g) {
@@ -59,10 +62,18 @@ class SlotMachinePanel extends JPanel {
                 start+=iconDim;
 
             }
+
+            slotWindow.setColor(Color.RED);
+            FontMetrics fm = slotWindow.getFontMetrics();
+            slotWindow.setFont(new Font("Times New Roman",Font.BOLD, 30));
+            if(messageToDisplay != null){
+                slotWindow.drawString(messageToDisplay, getWidth()/2-fm.stringWidth(messageToDisplay), 3*getHeight()/4+fm.getAscent()/2);
+            }
         }
 
         public void spin(){
-            spinTime = 5000;
+            spinTime = 3000;
+            cardUpdateIndx[1] = new Random().nextInt(3);
             ArrayList<String> icons = new ArrayList<>(SlotIcons.keySet());
             for(int i = 0; i < 3; i++) {
                 iconsToDraw[i] = icons.get(new Random().nextInt(icons.size()));
@@ -71,24 +82,54 @@ class SlotMachinePanel extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     repaint();
-                    iconsToDraw[cardUpdateIndx] = icons.get(new Random().nextInt(icons.size()));
-                    cardUpdateIndx = new Random().nextInt(3);
+                    iconsToDraw[cardUpdateIndx[1]] = icons.get(new Random().nextInt(icons.size()));
+                    cardUpdateIndx[0] = cardUpdateIndx[1];
+                    int a = 0;
+                    do{
+                        a = new Random().nextInt(3);
+                    }while(a == cardUpdateIndx[0]);
+                    cardUpdateIndx[1] = a;
                     spinTime -= 25;
                     if(spinTime <= 0){
                         slotSpinTimer.stop();
+                        evaluate();
                     }
                 }
             });
             slotSpinTimer.start();
         }
 
-        public void draw(){
-
+        public void displayMessage(String message){
+            messageToDisplay = message;
+            repaint();
         }
+
+        public void draw(int icons[]){
+            ArrayList<String> iconsMap = new ArrayList<>(SlotIcons.keySet());
+            for(int i = 0; i < 3; i++) {
+                iconsToDraw[i] = (iconsMap.get(icons[i] - 1));
+            }
+            repaint();
+        }
+
+        public void clearDisplay(){
+            messageToDisplay = null;
+            repaint();
+        }
+
+        public void evaluate(){
+            draw(machine1.playRound());
+            if(machine1.roundWon()){
+                displayMessage("Jackpot!!");
+            }else{
+                displayMessage("Try again!!");
+            }
+        }
+
     }
 
 
-    public SlotMachinePanel() {
+    SlotMachinePanel() {
         machine1 = new SlotMachine(3, 5);
         setLayout(new BorderLayout());
 
@@ -104,8 +145,7 @@ class SlotMachinePanel extends JPanel {
     }
 
     private void onSpinButton(){
+        mainSlot.clearDisplay();
         mainSlot.spin();
-        machine1.playRound();
     }
-
 }

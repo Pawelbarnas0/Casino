@@ -7,12 +7,18 @@ import java.io.IOException;
 import casino.gui.GuiClass;
 
 public class CasinoApp {
-    public static int playerBalance = 1000;
+    private static int playerBalance = 1000;
     public static JLabel balanceLabel = new JLabel("Player Balance: " + playerBalance);
-
     public static void updateBalance() {
         balanceLabel.setText("Player Balance: " + playerBalance);
     }
+    public static int getPlayerBalance() {
+        return playerBalance;
+    }
+    public static void setPlayerBalance(int newBalance) {
+        playerBalance = newBalance;
+    }
+
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame("Casino Application");
@@ -24,11 +30,9 @@ public class CasinoApp {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                try {File imageFile = new File("images/depositphotos_10704115-stock-photo-casino-background.jpg");
-                    System.out.println("Absolute path: " + imageFile.getAbsolutePath());
-                    System.out.println("File exists: " + imageFile.exists());
-                    Image backgroundImage = ImageIO.read(new File("images/casino_background.jpg"));
-                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+                try {
+                    Image backgroundImage = ImageIO.read(new File("images/tło.png"));
+                    g.drawImage(backgroundImage, 100, 100, 600, 400, this);
                 } catch (IOException e) {
                     System.out.println("Image not loaded");
                 }
@@ -75,17 +79,24 @@ public class CasinoApp {
 
         // Add labels and components to panels
         topPanel.add(CasinoApp.balanceLabel);
-        centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
+        JButton addBalanceButton = new JButton("Add $1000");
         JButton slotButton = new JButton("Roulette");
         JButton slotMachinerButton = new JButton("Slot Machine");
         JButton blackjackButton = new JButton("Blackjack");
         JButton exitButton = new JButton("Exit");
+
+        // Add action listeners to buttons
+        addBalanceButton.addActionListener(e -> {
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() + 1000);
+            CasinoApp.updateBalance();
+        });
 
         // Add buttons to the bottom panel
         bottomPanel.add(slotButton);
         bottomPanel.add(slotMachinerButton);
         bottomPanel.add(blackjackButton);
         bottomPanel.add(exitButton);
+        bottomPanel.add(addBalanceButton);
 
         // Add components to the background panel
         JPanel themePanel = new JPanel(); // Panel to hold themeSelector
