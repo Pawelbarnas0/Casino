@@ -124,19 +124,33 @@ public class RouletteGamePanel extends JPanel {
         int cx = getWidth() / 2;
         int cy = getHeight() / 2 + 50;
 
-        // Draw the wheel (all slices)
+        // 1. Draw the wheel slices (arcs) without drawing numbers
         for (int i = 0; i < slices; i++) {
             Color sliceColor = getSliceColor(i);
             double start = i * (360.0 / slices);
             double extent = 360.0 / slices;
-            Arc2D arc = new Arc2D.Double(cx - wheelSize / 2.0, cy - wheelSize / 2.0, wheelSize, wheelSize, start, extent, Arc2D.PIE);
+            Arc2D arc = new Arc2D.Double(cx - wheelSize / 2.0, cy - wheelSize / 2.0,
+                    wheelSize, wheelSize, start, extent, Arc2D.PIE);
             g2.setColor(sliceColor);
             g2.fill(arc);
             g2.setColor(Color.BLACK);
             g2.draw(arc);
-            // Draw numbers
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
+        }
+
+        // 2. Draw the ball
+        double radians = Math.toRadians(ballAngle % 360);
+        int radius = wheelSize / 2 - 10;
+        int ballSize = 15;
+        int bx = cx + (int) (Math.cos(radians) * radius) - ballSize / 2;
+        int by = cy + (int) (Math.sin(radians) * radius) - ballSize / 2;
+        g2.setColor(Color.WHITE);
+        g2.fillOval(bx, by, ballSize, ballSize);
+
+        // 3. Draw the numbers on top
+        g2.setFont(new Font("Arial", Font.BOLD, 14));
+        for (int i = 0; i < slices; i++) {
+            double start = i * (360.0 / slices);
+            double extent = 360.0 / slices;
             double angleRad = Math.toRadians(start + extent / 2);
             int textRadius = wheelSize / 2 - 25;
             int tx = cx + (int) (Math.cos(angleRad) * textRadius);
@@ -150,18 +164,11 @@ public class RouletteGamePanel extends JPanel {
             FontMetrics fm = g2.getFontMetrics();
             int textWidth = fm.stringWidth(num);
             int textHeight = fm.getAscent();
-            g2.drawString(num, textWidth / 2, textHeight / 2 - 2);
+            g2.setColor(Color.WHITE);
+            // Adjust the drawing position so that the number is centered
+            g2.drawString(num, -textWidth / 2, textHeight / 2 - 2);
             g2.setTransform(old);
         }
-
-        // Draw ball
-        double radians = Math.toRadians(ballAngle % 360);
-        int radius = wheelSize / 2 - 10;
-        int ballSize = 15;
-        int bx = cx + (int) (Math.cos(radians) * radius) - ballSize / 2;
-        int by = cy + (int) (Math.sin(radians) * radius) - ballSize / 2;
-        g2.setColor(Color.WHITE);
-        g2.fillOval(bx, by, ballSize, ballSize);
 
         g2.dispose();
     }

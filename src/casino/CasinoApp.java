@@ -1,6 +1,9 @@
 package casino;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import casino.gui.GuiClass;
 
 public class CasinoApp {
@@ -21,11 +24,14 @@ public class CasinoApp {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon backgroundIcon = new ImageIcon("images/depositphotos_10718713-stock-photo-casino-background.jpg");
-                if(backgroundIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                try {File imageFile = new File("images/depositphotos_10704115-stock-photo-casino-background.jpg");
+                    System.out.println("Absolute path: " + imageFile.getAbsolutePath());
+                    System.out.println("File exists: " + imageFile.exists());
+                    Image backgroundImage = ImageIO.read(new File("images/casino_background.jpg"));
+                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+                } catch (IOException e) {
                     System.out.println("Image not loaded");
                 }
-                g.drawImage(backgroundIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         backgroundPanel.setLayout(new BorderLayout());
