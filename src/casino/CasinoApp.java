@@ -9,7 +9,6 @@ import casino.gui.GuiClass;
 public class CasinoApp {
     private static int playerBalance = 1000;
     public static JLabel balanceLabel = new JLabel("Player Balance: " + playerBalance);
-
     public static void updateBalance() {
         balanceLabel.setText("Player Balance: " + playerBalance);
     }
@@ -33,7 +32,7 @@ public class CasinoApp {
                 super.paintComponent(g);
                 try {
                     Image backgroundImage = ImageIO.read(new File("images/tło.png"));
-                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+                    g.drawImage(backgroundImage, 100, 100, 600, 400, this);
                 } catch (IOException e) {
                     System.out.println("Image not loaded");
                 }
@@ -80,17 +79,24 @@ public class CasinoApp {
 
         // Add labels and components to panels
         topPanel.add(CasinoApp.balanceLabel);
-        centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
+        JButton addBalanceButton = new JButton("Add $1000");
         JButton slotButton = new JButton("Roulette");
         JButton pokerButton = new JButton("Poker");
         JButton blackjackButton = new JButton("Blackjack");
         JButton exitButton = new JButton("Exit");
+
+        // Add action listeners to buttons
+        addBalanceButton.addActionListener(e -> {
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() + 1000);
+            CasinoApp.updateBalance();
+        });
 
         // Add buttons to the bottom panel
         bottomPanel.add(slotButton);
         bottomPanel.add(pokerButton);
         bottomPanel.add(blackjackButton);
         bottomPanel.add(exitButton);
+        bottomPanel.add(addBalanceButton);
 
         // Add components to the background panel
         JPanel themePanel = new JPanel(); // Panel to hold themeSelector

@@ -30,7 +30,6 @@ public class GuiClass {
     public void setupExitButton(JButton exitButton, JPanel centerPanel) {
         exitButton.addActionListener(e -> {
             centerPanel.removeAll();
-            centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
             centerPanel.revalidate();
             centerPanel.repaint();
         });

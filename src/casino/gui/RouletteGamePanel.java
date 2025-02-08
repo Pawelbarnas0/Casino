@@ -5,8 +5,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
-
+import java.security.SecureRandom;
 import casino.BetValidator;
 import casino.CasinoApp;
 import casino.InsufficientBalanceException;
@@ -60,7 +61,20 @@ public class RouletteGamePanel extends JPanel {
             return;
         }
         spinningCount = 0;
-        winningNumber = random.nextInt(slices);
+        SecureRandom ranSeed;
+        try {
+            ranSeed = SecureRandom.getInstance("NativePRNG");
+            byte[] seed = ranSeed.generateSeed(8);
+            long seedVal = seed[0];
+            for (int i = 1; i < 8; i++) {
+                seedVal += seed[i];
+            }
+            Random random = new Random(seedVal);
+            winningNumber = random.nextInt(slices);
+        } catch (NoSuchAlgorithmException e) {
+            Random random = new Random();
+            winningNumber = random.nextInt(slices);
+        }
         ballAngle = 0;
         int numberOfSpins = 5; // Number of full spins before stopping
         finalAngle = (winningNumber + 0.5) * (360.0 / slices) + numberOfSpins * 360.0;
