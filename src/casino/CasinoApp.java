@@ -7,12 +7,19 @@ import java.io.IOException;
 import casino.gui.GuiClass;
 
 public class CasinoApp {
-    public static int playerBalance = 1000;
+    private static int playerBalance = 1000;
     public static JLabel balanceLabel = new JLabel("Player Balance: " + playerBalance);
 
     public static void updateBalance() {
         balanceLabel.setText("Player Balance: " + playerBalance);
     }
+    public static int getPlayerBalance() {
+        return playerBalance;
+    }
+    public static void setPlayerBalance(int newBalance) {
+        playerBalance = newBalance;
+    }
+
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame("Casino Application");
@@ -24,10 +31,8 @@ public class CasinoApp {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                try {File imageFile = new File("images/depositphotos_10704115-stock-photo-casino-background.jpg");
-                    System.out.println("Absolute path: " + imageFile.getAbsolutePath());
-                    System.out.println("File exists: " + imageFile.exists());
-                    Image backgroundImage = ImageIO.read(new File("images/casino_background.jpg"));
+                try {
+                    Image backgroundImage = ImageIO.read(new File("images/tło.png"));
                     g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
                 } catch (IOException e) {
                     System.out.println("Image not loaded");
