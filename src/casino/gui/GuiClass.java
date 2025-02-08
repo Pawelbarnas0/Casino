@@ -11,10 +11,10 @@ public class GuiClass {
             centerPanel.repaint();
         });
     }
-    public void setuppokerButton(JButton pokerButton, JPanel centerPanel) {
+    public void setupslotMachineButton(JButton pokerButton, JPanel centerPanel) {
         pokerButton.addActionListener(e -> {
             centerPanel.removeAll();
-            centerPanel.add(new JLabel("poker Coming Soon!"));
+            centerPanel.add(new SlotMachinePanel());
             centerPanel.revalidate();
             centerPanel.repaint();
         });

@@ -77,13 +77,13 @@ public class CasinoApp {
         topPanel.add(CasinoApp.balanceLabel);
         centerPanel.add(new JLabel("Welcome to the Casino! Select a game to play."));
         JButton slotButton = new JButton("Roulette");
-        JButton pokerButton = new JButton("Poker");
+        JButton slotMachinerButton = new JButton("Slot Machine");
         JButton blackjackButton = new JButton("Blackjack");
         JButton exitButton = new JButton("Exit");
 
         // Add buttons to the bottom panel
         bottomPanel.add(slotButton);
-        bottomPanel.add(pokerButton);
+        bottomPanel.add(slotMachinerButton);
         bottomPanel.add(blackjackButton);
         bottomPanel.add(exitButton);
 
@@ -93,7 +93,7 @@ public class CasinoApp {
         themePanel.add(new JLabel("Select Theme: "));
         themePanel.add(themeSelector);
 
-// Combine themePanel and topPanel
+        // Combine themePanel and topPanel
         JPanel combinedTopPanel = new JPanel(new BorderLayout());
         combinedTopPanel.setOpaque(false);
         combinedTopPanel.add(themePanel, BorderLayout.NORTH);
@@ -107,7 +107,7 @@ public class CasinoApp {
         frame.setContentPane(backgroundPanel);
         GuiClass guiClass = new GuiClass();
         guiClass.setupSlotButton(slotButton, centerPanel);
-        guiClass.setuppokerButton(pokerButton, centerPanel);
+        guiClass.setupslotMachineButton(slotMachinerButton, centerPanel);
         guiClass.setupblackjackButton(blackjackButton, centerPanel);
         guiClass.setupExitButton(exitButton, centerPanel);
 

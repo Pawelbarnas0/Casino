@@ -114,7 +114,7 @@ public class BlackJackPanel extends JPanel{
             secureLateMessageDisplay("BLACKJACK!!", 500);
             //add 3/2 of the bet
         }else if(dealer.GetScore() == 21){
-            secureLateMessageDisplay("Dealer has BLACKAJCK!!", 500);
+            secureLateMessageDisplay("Dealer has BLACKJACK!!", 500);
             //subtract the bet
 
         }else if(dealer.GetScore() == 21 && hands.get(currentHand).GetScore() == 21){
