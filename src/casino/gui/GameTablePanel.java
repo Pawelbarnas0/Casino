@@ -55,7 +55,7 @@ public class GameTablePanel extends JPanel {
                 BufferedImage cardImg = ImageIO.read(card);
                 cardDeck.put(card.getName(), cardImg);
             }catch(IOException e){
-                System.out.println("Failed to load image" + card.getName());
+                System.out.println("Failed to load image " + card.getName());
             }
         playerCount = 0;
         scores = new String[2];
