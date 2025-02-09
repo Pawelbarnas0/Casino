@@ -1,0 +1,60 @@
+@startuml
+actor User
+
+participant "CasinoApp" as CA
+participant "GuiClass" as GC
+participant "RouletteGamePanel" as RGP
+participant "SlotMachinePanel" as SMP
+participant "BlackJackPanel" as BJP
+participant "BetValidator" as BV
+participant "ErrorPanel" as EP
+participant "BlackJackDealer" as BJD
+participant "GameTablePanel" as GTP
+participant "Cardstack" as CS
+
+User -> CA: start application
+CA -> GC: setupRoulletteButton()
+CA -> GC: setupslotMachineButton()
+CA -> GC: setupblackjackButton()
+CA -> GC: setupExitButton()
+CA -> GC: setupaAddBalanceButton()
+
+User -> GC: click RoullleteButton()
+GC -> RGP: new RouletteGamePanel()
+RGP -> BV: validateBet()
+BV -> RGP: validation result
+RGP -> EP: showError() [if validation fails]
+RGP -> RGP: spin()
+RGP -> CA: updateBalance()
+
+User -> GC: click slotMachineButton
+GC -> SMP: new SlotMachinePanel()
+SMP -> BV: validateBet()
+BV -> SMP: validation result
+SMP -> EP: showError() [if validation fails]
+SMP -> SMP: spin()
+SMP -> CA: updateBalance()
+
+User -> GC: click blackjackButton
+GC -> BJP: new BlackJackPanel()
+BJP -> BJP: deal()
+BJP -> BV: validateBet()
+BV -> BJP: validation result
+BJP -> EP: showError() [if validation fails]
+BJP -> BJD: Draw()
+BJD -> CS: drawCard()
+BJP -> CA: updateBalance()
+BJP -> BJP: hit()
+BJP -> BJH: Draw()
+BJH -> CS: drawCard()
+BJP -> BJP: stand()
+BJP -> BJP: revealHoldCard()
+BJP -> GTP: drawCard()
+BJP -> BJD: GetCards()
+BJD -> CS: drawCard()
+BJP -> BJP: evaluateGame()
+BJP -> BJH: GetScore()
+BJP -> BJD: GetScore()
+BJP -> CA: updateBalance()
+
+@enduml
