@@ -1,5 +1,9 @@
 package casino.gui;
 
+import casino.BetValidator;
+import casino.CasinoApp;
+import casino.InsufficientBalanceException;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -13,19 +17,22 @@ import java.util.HashMap;
 import java.util.Random;
 
 class SlotMachinePanel extends JPanel {
-    SlotMachine machine1;
-    JComboBox betAmountComboBox;
+    private SlotMachine machine1;
+    private JComboBox betAmountComboBox;
     Slot mainSlot;
+    private JButton spinButton;
+    private int currentBet;
+    private JPanel gamePlayPanel;
 
     private class Slot extends JPanel{
-        Graphics2D slotWindow;
-        HashMap<String, BufferedImage> SlotIcons;
-        String[] iconsToDraw;
-        Timer slotSpinTimer;
-        int[] cardUpdateIndx;
-        int spinTime;
-        String messageToDisplay;
-
+        private Graphics2D slotWindow;
+        private HashMap<String, BufferedImage> SlotIcons;
+        private String[] iconsToDraw;
+        private Timer slotSpinTimer;
+        private int[] cardUpdateIndx;
+        private int spinTime;
+        private String messageToDisplay;
+        ArrayList<String> barIcons;
 
         Slot(){
             File folder = new File("images/SlotMachineIcons");
@@ -72,7 +79,7 @@ class SlotMachinePanel extends JPanel {
         }
 
         public void spin(){
-            spinTime = 3000;
+            spinTime = 2000;
             cardUpdateIndx[1] = new Random().nextInt(3);
             ArrayList<String> icons = new ArrayList<>(SlotIcons.keySet());
             for(int i = 0; i < 3; i++) {
@@ -81,6 +88,7 @@ class SlotMachinePanel extends JPanel {
             slotSpinTimer = new javax.swing.Timer(25, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    spinButton.setEnabled(false);
                     repaint();
                     iconsToDraw[cardUpdateIndx[1]] = icons.get(new Random().nextInt(icons.size()));
                     cardUpdateIndx[0] = cardUpdateIndx[1];
@@ -92,6 +100,7 @@ class SlotMachinePanel extends JPanel {
                     spinTime -= 25;
                     if(spinTime <= 0){
                         slotSpinTimer.stop();
+                        spinButton.setEnabled(true);
                         evaluate();
                     }
                 }
@@ -105,9 +114,9 @@ class SlotMachinePanel extends JPanel {
         }
 
         public void draw(int icons[]){
-            ArrayList<String> iconsMap = new ArrayList<>(SlotIcons.keySet());
+            barIcons = new ArrayList<>(SlotIcons.keySet());
             for(int i = 0; i < 3; i++) {
-                iconsToDraw[i] = (iconsMap.get(icons[i] - 1));
+                iconsToDraw[i] = (barIcons.get(icons[i] - 1));
             }
             repaint();
         }
@@ -118,12 +127,35 @@ class SlotMachinePanel extends JPanel {
         }
 
         public void evaluate(){
-            draw(machine1.playRound());
+            int[] endBar = machine1.playRound();
+            draw(endBar);
             if(machine1.roundWon()){
                 displayMessage("Jackpot!!");
+                calculatePayouts(endBar);
             }else{
                 displayMessage("Try again!!");
             }
+        }
+
+        private void calculatePayouts(int[] icons){
+            barIcons = new ArrayList<>(SlotIcons.keySet());
+            for(int i = 0; i < 3; i++) {
+                iconsToDraw[i] = (barIcons.get(icons[i] - 1));
+            }
+
+            int winnings;
+            switch(iconsToDraw[1]){
+                case"bell.png":
+                    winnings = currentBet;
+                    break;
+                case "diamond.png":
+                    winnings = currentBet/2;
+                    break;
+                default:
+                    winnings = 3*currentBet/10;
+                    break;
+            }
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() + winnings + currentBet);
         }
 
     }
@@ -135,16 +167,32 @@ class SlotMachinePanel extends JPanel {
 
         mainSlot = new Slot();
         mainSlot.setPreferredSize(new Dimension(200, 100));
-        JButton spinButton = new JButton("Spin");
+        mainSlot.draw(new int[]{2,2,2});
+        spinButton = new JButton("Spin");
+        betAmountComboBox = new JComboBox<>(new String[]{"$5", "$10", "$15", "$25", "$50"});
+
+        gamePlayPanel = new JPanel();
+        gamePlayPanel.setLayout(new GridLayout(1,2));
+        gamePlayPanel.add(spinButton);
+        gamePlayPanel.add(betAmountComboBox);
 
         add(mainSlot, BorderLayout.CENTER);
-        add(spinButton, BorderLayout.SOUTH);
-
+        add(gamePlayPanel, BorderLayout.SOUTH);
 
         spinButton.addActionListener(e -> onSpinButton());
     }
 
     private void onSpinButton(){
+        String betval = (String)betAmountComboBox.getSelectedItem();
+        betval = betval.substring(1, betval.length());
+        currentBet = Integer.parseInt(betval);
+        try {
+            BetValidator.validateBet(currentBet);
+        } catch (InsufficientBalanceException e) {
+            ErrorPanel.showError(e.getMessage());
+            return;
+        }
+        CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance()-currentBet);
         mainSlot.clearDisplay();
         mainSlot.spin();
     }

@@ -96,12 +96,13 @@ public class GameTablePanel extends JPanel {
                     startX[1]+=cardWidth;
             }
         }
-        table.setFont(new Font("Times New Roman",Font.BOLD, 15));
+        int fontsize = getHeight()/13;
+        table.setFont(new Font("Times New Roman",Font.BOLD, fontsize/2));
         table.setColor(Color.WHITE);
         FontMetrics fm = table.getFontMetrics();
         if(scores[0] != null) table.drawString("Dealer score "+scores[0], getWidth()/50, Y[0]-cardHeight/2);
         if(scores[1] != null) table.drawString("Your score "+scores[1], getWidth()/50, Y[1]-cardHeight/2 - 20);
-        table.setFont(new Font("Times New Roman",Font.BOLD, 30));
+        table.setFont(new Font("Times New Roman",Font.BOLD, fontsize));
         if(messageToDisplay != null){
             table.drawString(messageToDisplay, getWidth()/2-fm.stringWidth(messageToDisplay), getHeight()/2-fm.getAscent()/2);
             drawTableText = false;
@@ -110,7 +111,7 @@ public class GameTablePanel extends JPanel {
         if(drawTableText){
             table.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
             table.drawString("Blackjack pays 3:2", getWidth()/2-fm.stringWidth("Blackjack pays 3:2"), getHeight()/2-fm.getAscent()/2);
-            table.setFont(new Font("Times New Roman",Font.BOLD, 15));
+            table.setFont(new Font("Times New Roman",Font.BOLD, fontsize/2));
             table.drawString("Dealer must stand on soft 17", getWidth()/2 - fm.stringWidth("Dealer must stand on soft 17")/2, getHeight()/2+fm.getAscent());
         }
     }
