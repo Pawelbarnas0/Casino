@@ -1,5 +1,9 @@
 package casino.gui;
 
+import casino.BetValidator;
+import casino.CasinoApp;
+import casino.InsufficientBalanceException;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -20,11 +24,13 @@ public class BlackJackPanel extends JPanel{
     private int currentHand;
     private javax.swing.Timer dealerTimer;
     private boolean buttonsWorking;
+    private int roundBet;
 
     private JButton hitButton;
     private JButton standButton;
     private JButton splitButton;
     private JButton doubleButton;
+    private JComboBox<String> betSelector;
 
     private class lateDisplayMessage implements ActionListener{
         private String message;
@@ -53,7 +59,7 @@ public class BlackJackPanel extends JPanel{
 
         JButton dealButton = new JButton("Deal");
         dealButton.addActionListener(e -> {onDealButton();});
-        JComboBox<String> betSelector = new JComboBox<>(new String[]{"$5", "$10", "$20", "$50", "$100"});
+        betSelector = new JComboBox<>(new String[]{"$5", "$10", "$20", "$50", "$100"});
 
         startPanel.add(dealButton);
         startPanel.add(betSelector);
@@ -96,8 +102,18 @@ public class BlackJackPanel extends JPanel{
     void onDealButton(){
         dealer.reset();
         hands.clear();
-        hands.add(new BlackJackHand());
         currentHand = 0;
+        String betval = (String)betSelector.getSelectedItem();
+        betval = betval.substring(1, betval.length());
+        roundBet = Integer.parseInt(betval);
+        try {
+            BetValidator.validateBet(roundBet);
+        } catch (InsufficientBalanceException e) {
+            ErrorPanel.showError(e.getMessage());
+            return;
+        }
+        hands.add(new BlackJackHand(roundBet));
+        CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() - hands.get(currentHand).bet);
         tablePanel.clearMessageDisplay();
 
         scenes.show(mainPanel, "gamePlayPanel");
@@ -113,12 +129,13 @@ public class BlackJackPanel extends JPanel{
         if(hands.get(currentHand).GetScore() == 21){
             secureLateMessageDisplay("BLACKJACK!!", 500);
             //add 3/2 of the bet
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance()+ 5*hands.get(currentHand).bet/2);
         }else if(dealer.GetScore() == 21){
             secureLateMessageDisplay("Dealer has BLACKJACK!!", 500);
             //subtract the bet
-
         }else if(dealer.GetScore() == 21 && hands.get(currentHand).GetScore() == 21){
             secureLateMessageDisplay("PUSH!!", 500);
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance()+ hands.get(currentHand).bet);
         }
     }
 
@@ -131,7 +148,6 @@ public class BlackJackPanel extends JPanel{
         hands.get(currentHand).Draw(cardStack.DrawCard());
         refreshScene();
         if(hands.get(currentHand).Bust()){
-            //subtract portion of bet: totalbet/hands.size
             hands.remove(currentHand);
             if(hands.size() >= 1){
                 refreshScene();
@@ -170,14 +186,21 @@ public class BlackJackPanel extends JPanel{
     void onSplitButton() {
         if(!buttonsWorking) return;
         if (hands.get(currentHand).hasPair()) {
-            hands.add(currentHand + 1, new BlackJackHand());
+            //double the bet
+            try {
+                BetValidator.validateBet(roundBet);
+            } catch (InsufficientBalanceException e) {
+                ErrorPanel.showError(e.getMessage());
+                return;
+            }
+            hands.add(currentHand + 1, new BlackJackHand(roundBet));
             hands.get(currentHand + 1).PlayerCards.add(hands.get(currentHand).PlayerCards.get(1));
             hands.get(currentHand).PlayerCards.remove(1);
             hands.get(currentHand).Draw(cardStack.DrawCard());
             hands.get(currentHand + 1).Draw(cardStack.DrawCard());
-            //double the bet
+            CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() - hands.get(currentHand).bet);
             refreshScene();
-        }
+       }
     }
 
 
@@ -191,6 +214,14 @@ public class BlackJackPanel extends JPanel{
         onHitButton();
         onStandButton();
         //double the bet
+        try {
+            BetValidator.validateBet(roundBet);
+        } catch (InsufficientBalanceException e) {
+            ErrorPanel.showError(e.getMessage());
+            return;
+        }
+        CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() - roundBet);
+        hands.get(currentHand).bet += roundBet;
     }
 
     void updatePlayer(){
@@ -241,6 +272,9 @@ public class BlackJackPanel extends JPanel{
             tablePanel.displayMessage("Dealer BUST!!");
             scenes.show(mainPanel, "startPanel");
             //add bet to account
+            for(int i = 0; i < hands.size(); i++) {
+                CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance() + 2 * hands.get(i).bet);
+            }
         }else{
             int delay = 0;
             for(int i = 0; i < hands.size(); i++){
@@ -248,12 +282,14 @@ public class BlackJackPanel extends JPanel{
                 if(hands.get(i).GetScore() > dealer.GetScore()){
                     currentHand = i;
                     scenes.show(mainPanel, "startPanel");
+                    CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance()+ hands.get(i).bet *2);
                     secureLateMessageDisplay("You Win!!", delay);
                     revealHoldCard();
                     //add bet to account
                 } else if(hands.get(i).GetScore() == dealer.GetScore()){
                     currentHand = i;
                     scenes.show(mainPanel, "startPanel");
+                    CasinoApp.setPlayerBalance(CasinoApp.getPlayerBalance()+ hands.get(i).bet);
                     secureLateMessageDisplay("PUSH!!", delay);
                     revealHoldCard();
                 }else{

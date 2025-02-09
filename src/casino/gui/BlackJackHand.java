@@ -3,11 +3,12 @@ package casino.gui;
 import java.util.ArrayList;
 
 public class BlackJackHand {
-
     ArrayList<String> PlayerCards;
+    int bet;
 
-    BlackJackHand(){
+    BlackJackHand(int betamount){
         PlayerCards = new ArrayList<>();
+        bet = betamount;
     }
 
     public void Draw(String card){
