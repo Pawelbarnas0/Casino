@@ -11,6 +11,7 @@ participant "ErrorPanel" as EP
 participant "BlackJackDealer" as BJD
 participant "GameTablePanel" as GTP
 participant "Cardstack" as CS
+participant "BlackJackHand" as BJH
 
 User -> CA: start application
 CA -> GC: setupRoulletteButton()
