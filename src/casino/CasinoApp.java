@@ -17,6 +17,7 @@ public class CasinoApp {
     }
     public static void setPlayerBalance(int newBalance) {
         playerBalance = newBalance;
+        updateBalance();
     }
 
     public static void main(String[] args) {
