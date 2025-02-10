@@ -88,7 +88,6 @@ class SlotMachinePanel extends JPanel {
             slotSpinTimer = new javax.swing.Timer(25, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    spinButton.setEnabled(false);
                     repaint();
                     iconsToDraw[cardUpdateIndx[1]] = icons.get(new Random().nextInt(icons.size()));
                     cardUpdateIndx[0] = cardUpdateIndx[1];
@@ -105,6 +104,7 @@ class SlotMachinePanel extends JPanel {
                     }
                 }
             });
+            spinButton.setEnabled(false);
             slotSpinTimer.start();
         }
 
