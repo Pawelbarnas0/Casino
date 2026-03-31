@@ -1,0 +1,145 @@
+@startuml
+package casino {
+    class CasinoApp {
+        - int playerBalance
+        + JLabel balanceLabel
+        + void updateBalance()
+        + int getPlayerBalance()
+        + void setPlayerBalance(int newBalance)
+        + void main(String[] args)
+    }
+
+    class BetValidator {
+        + void validateBet(int betAmount) throws InsufficientBalanceException
+    }
+
+    class InsufficientBalanceException extends Exception {
+        + InsufficientBalanceException(String message)
+    }
+}
+
+package casino.gui {
+    class GuiClass {
+        + void setupSlotButton(JButton slotButton, JPanel centerPanel)
+        + void setupslotMachineButton(JButton pokerButton, JPanel centerPanel)
+        + void setupblackjackButton(JButton blackjackButton, JPanel centerPanel)
+        + void setupExitButton(JButton exitButton, JPanel centerPanel)
+    }
+
+    class RouletteGamePanel {
+        + void startSpin()
+        + void paintComponent(Graphics g)
+        + Color getSliceColor(int index)
+    }
+    class CardStack {
+        - ArrayList<String> cards
+        + void shuffle()
+        + String drawCard()
+        + int getCardValue(String card)
+        + void reset()
+    }
+    class BlackJackHand {
+        - ArrayList<String> cards
+        + void addCard(String card)
+        + int getScore()
+        + void reset()
+    }
+
+    class SlotMachinePanel {
+        + void onSpinButton()
+        + void evaluate()
+        + void calculatePayouts(int[] icons)
+    }
+
+    class SlotMachine {
+        - int rollerNr
+        - int symbolNr
+        - Random ranGen
+        - boolean roundWon
+        + int[] playRound()
+        + boolean roundWon()
+    }
+
+    class BlackJackPanel {
+            - CardLayout scenes;
+            - JPanel mainPanel;
+            - JPanel gamePlayPanel;
+            - JPanel startPanel;
+            - GameTablePanel tablePanel;
+
+            - ArrayList<BlackJackHand> hands;
+            - BlackJackDealer dealer;
+            - CardStack cardStack;
+            - int currentHand;
+            - javax.swing.Timer dealerTimer;
+            - boolean buttonsWorking;
+            - int roundBet;
+
+            - JButton hitButton;
+            - JButton standButton;
+            - JButton splitButton;
+            - JButton doubleButton;
+            - JComboBox<String> betSelector;
+             + void onDealButton()
+             + void onHitButton()
+             + void onStandButton()
+             + void onSplitButton()
+             + void onDoubleButton()
+             + void updatePlayer()
+             + void refreshScene()
+             + void revealHoldCard()
+             + void refreshScores(boolean refreshdealer)
+             + void triggerButtons()
+             + void evaluateGame()
+             + Customize Toolbar...
+
+
+    }
+
+    class BlackJackDealer {
+        - final int Threshold
+        - ArrayList<String> dealerCards
+        + void Draw(String card)
+        + ArrayList<String> getCards()
+        + int GetScore()
+        + boolean Bust()
+        + void reset()
+    }
+
+    class GameTablePanel {
+        - HashMap<String, BufferedImage> cardDeck
+        - BufferedImage cardBack
+        - Graphics2D table
+        - ArrayList<cardDrawinf> cardsToDraw
+        - String messageToDisplay
+        - int dealerCardNum
+        - int playerCardNum
+        - int playerCount
+        - String[] scores
+        + void drawCard(ArrayList<String> cards, String where, boolean faceup)
+        + void drawCard(String card, String where, boolean faceup)
+        + void displayMessage(String message)
+        + void enterScores(int dealer, int player)
+        + void clearMessageDisplay()
+        + void clearDrawnCards()
+        + ArrayList<String> getCardList()
+    }
+
+    class ErrorPanel {
+        + void showError(String message)
+    }
+}
+
+CasinoApp --> GuiClass
+CasinoApp --> BetValidator
+BetValidator --> InsufficientBalanceException
+GuiClass --> RouletteGamePanel
+GuiClass --> SlotMachinePanel
+GuiClass --> BlackJackPanel
+BlackJackPanel--> GameTablePanel
+InsufficientBalanceException --> ErrorPanel
+BlackJackPanel --> Cardstack
+BlackJackPanel --> BlackJackDealer
+SlotMachinePanel --> SlotMachine
+GameTablePanel --> BlackJackDealer
+@enduml
